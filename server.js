@@ -18,13 +18,17 @@ app.use(
 app.use(express.json());
 
 // Ruta para obtener transacciones desde el servicio externo
-app.use("/api", async (req, res) => {
+app.use("/api/*", async (req, res) => {
   try {
     const path = req.originalUrl.replace("/api", "");
     req.body = req.body || {};
     const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/${path}`;
+    console.log("Target URL:", targetUrl);
+    console.log("Request Body:", req.body);
     const response = await axios.get(targetUrl, {
       headers: req.headers,
+      body: req.body,
+      params: req.query,
     });
 
     res.status(response.status).json(response.data);

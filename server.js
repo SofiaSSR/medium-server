@@ -21,39 +21,21 @@ app.use(express.json());
 
 app.use("/api", async (req, res) => {
   try {
-    const { path, method = "GET", headers = {}, data = null } = req.body;
+    const targetPath = req.header("X-Target-Path");
 
-    if (!path || typeof path !== "string") {
-      return res.status(400).json({
-        status: "error",
-        message: "Missing or invalid 'path' in request body",
-      });
+    if (!targetPath || typeof targetPath !== "string") {
+      return res.status(400).json({ message: "Missing X-Target-Path header" });
     }
 
-    // Restrict to safe methods
-    const allowedMethods = ["GET", "HEAD", "OPTIONS"];
-    if (!allowedMethods.includes(method.toUpperCase())) {
-      return res.status(405).json({
-        status: "error",
-        message: `Method not allowed: ${method}`,
-      });
-    }
-
-    const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/${path}`;
-
-    const response = await axios({
-      method,
-      url: targetUrl,
-      headers,
-      data,
-    });
+    const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000${targetPath}`;
+    console.log("Proxying request to:", targetUrl);
+    const response = await axios.get(targetUrl);
 
     res.status(response.status).send(response.data);
   } catch (error) {
     console.error("Proxy error:", error.message);
     res.status(500).json({
-      status: "error",
-      message: "Proxy request failed",
+      message: "Proxy GET failed",
       error: error.message,
     });
   }

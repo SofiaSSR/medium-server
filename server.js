@@ -18,6 +18,7 @@ app.use(
 app.use(express.json());
 
 // Ruta para obtener transacciones desde el servicio externo
+
 app.post("/api", async (req, res) => {
   try {
     const { path, method = "GET", headers = {}, data = null } = req.body;

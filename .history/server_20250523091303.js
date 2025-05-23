@@ -6,7 +6,7 @@ const port = 3000;
 const server = createServer((req, res) => {
   if (req.url === '/api/data' && req.method === 'GET') {
     const responseData = {
-      message: 'Here is your f data',
+      message: 'Here is your data',
       timestamp: new Date().toISOString(),
     };
     res.statusCode = 200;

@@ -18,25 +18,41 @@ app.use(
 app.use(express.json());
 
 // Ruta para obtener transacciones desde el servicio externo
-app.use("/api/*", async (req, res) => {
+app.post("/api", async (req, res) => {
   try {
-    const path = req.originalUrl.replace("/api", "");
-    req.body = req.body || {};
+    const { path, method = "GET", headers = {}, data = null } = req.body;
+
+    if (!path || typeof path !== "string") {
+      return res.status(400).json({
+        status: "error",
+        message: "Missing or invalid 'path' in request body",
+      });
+    }
+
+    // Restrict to safe methods
+    const allowedMethods = ["GET", "HEAD", "OPTIONS"];
+    if (!allowedMethods.includes(method.toUpperCase())) {
+      return res.status(405).json({
+        status: "error",
+        message: `Method not allowed: ${method}`,
+      });
+    }
+
     const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/${path}`;
-    console.log("Target URL:", targetUrl);
-    console.log("Request Body:", req.body);
-    const response = await axios.get(targetUrl, {
-      headers: req.headers,
-      body: req.body,
-      params: req.query,
+
+    const response = await axios({
+      method,
+      url: targetUrl,
+      headers,
+      data,
     });
 
-    res.status(response.status).json(response.data);
+    res.status(response.status).send(response.data);
   } catch (error) {
-    console.error("Error fetching transactions:", error.message);
+    console.error("Proxy error:", error.message);
     res.status(500).json({
       status: "error",
-      message: "Error al obtener las transacciones",
+      message: "Proxy request failed",
       error: error.message,
     });
   }

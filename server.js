@@ -16,7 +16,7 @@ app.use(cors({
 app.use(express.json());
 
 // Ruta para obtener transacciones desde el servicio externo
-app.get('/api/transactions', async (req, res) => {
+app.get('/api', async (req, res) => {
   try {
     const response = await axios.get('http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/transactions/');
     res.status(200).json(response.data);

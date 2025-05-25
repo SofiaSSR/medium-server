@@ -69,11 +69,10 @@ app.use("/api", async (req, res) => {
       },
       params: req.params,
     });
-
     res.status(response.status).send(response.data);
   } catch (error) {
     console.error("Proxy error:", error.message);
-    res.status(500).json({
+    res.status(error.status).json({
       message: "Proxy GET failed",
       error: error.message,
     });

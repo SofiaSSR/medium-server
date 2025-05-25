@@ -24,12 +24,18 @@ app.use("/api", async (req, res) => {
     const targetPath = req.header("X-Target-Path");
 
     if (!targetPath || typeof targetPath !== "string") {
-      return res.status(400).json({ message: "Missing X-Target-Path header" });
+      return res.status(400).json({ message: "Missing Target Path " });
     }
 
     const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000${targetPath}`;
     console.log("Proxying request to:", targetUrl);
-    const response = await axios.get(targetUrl);
+    const response = await axios.get(targetUrl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      query: req.query,
+      params: req.params,
+    });
 
     res.status(response.status).send(response.data);
   } catch (error) {

@@ -31,7 +31,8 @@ app.use("/api", async (req, res) => {
     console.log("Proxying request to:", targetUrl);
 
     if (targetPath.includes("date-range") || targetPath.includes("filter-mixed") ) {
-      const period = req.data.period;
+      console.log("Handling date range or filter mixed request", req.body.query, req.body.data);
+      const period = req.body?.data?.period;
       const end_date = new Date();
       let start_date;
       if (!period) {
@@ -56,7 +57,7 @@ app.use("/api", async (req, res) => {
           "Content-Type": "application/json",
         },
         params: req.params,
-        query: { end_date, start_date, date_field: "created_at" , ...req.query },
+        query: { end_date, start_date, date_field: "created_at" , ...req.body.query },
       });
     res.status(response.status).send(response.data);
     return

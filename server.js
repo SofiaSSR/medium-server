@@ -29,11 +29,43 @@ app.use("/api", async (req, res) => {
 
     const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000${targetPath}`;
     console.log("Proxying request to:", targetUrl);
+
+    if (targetPath.includes("date-range") || targetPath.includes("filter-mixed") ) {
+      const period = req.data.period;
+      const end_date = new Date();
+      let start_date;
+      if (!period) {
+        return res.status(400).json({
+          message: "Missing period query parameter",
+        });
+      }
+      if (period === "fortnight")
+        start_date = new Date(
+          end_date.getFullYear(),
+          end_date.getMonth(),
+          end_date.getDate() - 15
+        );
+      if (period === "month")
+        start_date = new Date(
+          end_date.getFullYear(),
+          end_date.getMonth() - 1,
+          end_date.getDate()
+        );
+      const response = await axios.get(targetUrl, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        params: req.params,
+        query: { end_date, start_date, date_field: "created_at" , ...req.query },
+      });
+    res.status(response.status).send(response.data);
+    return
+    }
+
     const response = await axios.get(targetUrl, {
       headers: {
         "Content-Type": "application/json",
       },
-      query: req.query,
       params: req.params,
     });
 

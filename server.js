@@ -30,8 +30,15 @@ app.use("/api", async (req, res) => {
     const targetUrl = `http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000${targetPath}`;
     console.log("Proxying request to:", targetUrl);
 
-    if (targetPath.includes("date-range") || targetPath.includes("filter-mixed") ) {
-      console.log("Handling date range or filter mixed request", req.body.query, req.body.data);
+    if (
+      targetPath.includes("date-range") ||
+      targetPath.includes("filter-mixed")
+    ) {
+      console.log(
+        "Handling date range or filter mixed request",
+        req.body.query,
+        req.body.data
+      );
       const period = req.body?.data?.period;
       const end_date = new Date();
       let start_date;
@@ -52,15 +59,26 @@ app.use("/api", async (req, res) => {
           end_date.getMonth() - 1,
           end_date.getDate()
         );
+      console.log("erda", {
+          end_date,
+          start_date,
+          date_field: "created_at",
+          ...req.body.query,
+        })
       const response = await axios.get(targetUrl, {
         headers: {
           "Content-Type": "application/json",
         },
         params: req.params,
-        query: { end_date, start_date, date_field: "created_at" , ...req.body.query },
+        query: {
+          end_date,
+          start_date,
+          date_field: "created_at",
+          ...req.body.query,
+        },
       });
-    res.status(response.status).send(response.data);
-    return
+      res.status(response.status).send(response.data);
+      return;
     }
 
     const response = await axios.get(targetUrl, {

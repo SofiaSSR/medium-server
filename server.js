@@ -55,10 +55,10 @@ app.use("/api", async (req, res) => {
         headers: {
           "Content-Type": "application/json",
         },
-        params: req.params,
-        query: {
-          end_date,
+        params: {
+          ...req.params,
           start_date,
+          end_date,
           ...req.body?.query,
         },
       });
@@ -98,15 +98,11 @@ app.use("/api", async (req, res) => {
         end_date.getDate()
       );
     return {
-      end_date: formatDate(end_date),
-      start_date: formatDate(start_date),
+      end_date,
+      start_date,
     };
   }
 });
-
-const formatDate = (date) => {
-  return date.toISOString().replace("Z", " ");
-};
 
 // Ruta de health check
 app.get("/health", (req, res) => {

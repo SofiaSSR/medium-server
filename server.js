@@ -100,7 +100,7 @@ app.use("/api", async (req, res) => {
 });
 
 const formatDate = (date) => {
-  return d.toISOString().replace("Z", " ");
+  return date.toISOString().replace("Z", " ");
 };
 
 // Ruta de health check

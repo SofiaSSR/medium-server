@@ -34,11 +34,6 @@ app.use("/api", async (req, res) => {
       targetPath.includes("date-range") ||
       targetPath.includes("filter-mixed")
     ) {
-      console.log(
-        "Handling date range or filter mixed request",
-        req.body.query,
-        req.body.data
-      );
       const period = req.body?.data?.period;
 
       if (!period) {
@@ -46,8 +41,16 @@ app.use("/api", async (req, res) => {
           message: "Missing period query parameter",
         });
       }
-      var { end_date, start_date } = getDateRange(period);
-
+      let { end_date, start_date } = getDateRange(period);
+      console.log(
+        "Handling date range or filter mixed request",
+        {
+          end_date,
+          start_date,
+          ...req.body?.query,
+        },
+        req.body.data
+      );
       const response = await axios.get(targetUrl, {
         headers: {
           "Content-Type": "application/json",
@@ -56,8 +59,7 @@ app.use("/api", async (req, res) => {
         query: {
           end_date,
           start_date,
-          date_field: "created_at",
-          ...req.body.query,
+          ...req.body?.query,
         },
       });
       res.status(response.status).send(response.data);
@@ -76,7 +78,7 @@ app.use("/api", async (req, res) => {
     res.status(error.status).json({
       message: "Proxy GET failed",
       error: error.message,
-      error : error.response ? error.response.data : "No response data",
+      error: error.response ? error.response.data : "No response data",
     });
   }
 
@@ -95,7 +97,10 @@ app.use("/api", async (req, res) => {
         end_date.getMonth() - 1,
         end_date.getDate()
       );
-    return { end_date: formatDate(end_date), start_date : formatDate(start_date) };
+    return {
+      end_date: formatDate(end_date),
+      start_date: formatDate(start_date),
+    };
   }
 });
 

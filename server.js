@@ -97,6 +97,8 @@ app.use("/api", async (req, res) => {
         end_date.getMonth() - 1,
         end_date.getDate()
       );
+      if (period === "all")
+      start_date = new Date(0)}
     return {
       end_date,
       start_date,

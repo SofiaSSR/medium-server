@@ -64,7 +64,7 @@ app.use("/api", async (req, res) => {
       });
       res.status(response.status).send(response.data);
       return;
-    }
+    };
 
     const response = await axios.get(targetUrl, {
       headers: {
@@ -81,6 +81,7 @@ app.use("/api", async (req, res) => {
       error: error.response ? error.response.data : "No response data",
     });
   }
+});
 
   function getDateRange(period) {
     const end_date = new Date();
@@ -98,12 +99,11 @@ app.use("/api", async (req, res) => {
         end_date.getDate()
       );
     if (period === "all") start_date = new Date(0);
-  }
   return {
     end_date,
     start_date,
   };
-});
+}
 
 // Ruta de health check
 app.get("/health", (req, res) => {

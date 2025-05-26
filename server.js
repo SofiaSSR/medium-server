@@ -40,31 +40,14 @@ app.use("/api", async (req, res) => {
         req.body.data
       );
       const period = req.body?.data?.period;
-      const end_date = new Date();
-      let start_date;
+
       if (!period) {
         return res.status(400).json({
           message: "Missing period query parameter",
         });
       }
-      if (period === "fortnight")
-        start_date = new Date(
-          end_date.getFullYear(),
-          end_date.getMonth(),
-          end_date.getDate() - 15
-        );
-      if (period === "month")
-        start_date = new Date(
-          end_date.getFullYear(),
-          end_date.getMonth() - 1,
-          end_date.getDate()
-        );
-      console.log("erda", {
-          end_date,
-          start_date,
-          date_field: "created_at",
-          ...req.body.query,
-        })
+      var { end_date, start_date } = getDateRange(period);
+
       const response = await axios.get(targetUrl, {
         headers: {
           "Content-Type": "application/json",
@@ -93,9 +76,32 @@ app.use("/api", async (req, res) => {
     res.status(error.status).json({
       message: "Proxy GET failed",
       error: error.message,
+      error : error.response ? error.response.data : "No response data",
     });
   }
+
+  function getDateRange(period) {
+    const end_date = new Date();
+    let start_date;
+    if (period === "fortnight")
+      start_date = new Date(
+        end_date.getFullYear(),
+        end_date.getMonth(),
+        end_date.getDate() - 15
+      );
+    if (period === "month")
+      start_date = new Date(
+        end_date.getFullYear(),
+        end_date.getMonth() - 1,
+        end_date.getDate()
+      );
+    return { end_date: formatDate(end_date), start_date : formatDate(start_date) };
+  }
 });
+
+const formatDate = (date) => {
+  return d.toISOString().replace("Z", " ");
+};
 
 // Ruta de health check
 app.get("/health", (req, res) => {

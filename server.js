@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require('multer');
 const axios = require("axios");
 
 const app = express();
@@ -29,15 +30,18 @@ app.use("/api/transactions", async (req, res) => {
     const targetUrl = `${baseUrl}${targetPath}`;
 
     console.log("Proxying transactions request to:", targetUrl);
+    console.log("Request body:", req.body);
     switch (req.header("method")) {
       case "POST":
-        const response = axios.post(targetUrl, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          params: req.params,
-          ...req.body,
-        });
+        const response = axios.post("https://elder-link-staging-n8n.fwoasm.easypanel.host/webhook/6e0954b7-832f-4817-86cd-9c59f18d8a52", { image :req.body.invoiceImage});
+        // const response = axios.post(targetUrl, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   params: req.params,
+        //   ...req.body,
+        // });
+        console.log("Response from external service:", response.data, response.status);
         res.status(response.status).send(response.data);
         return;
       case "PUT":

@@ -28,7 +28,7 @@ app.use("/api/transactions", async (req, res) => {
   console.log("Content-Type:", req.headers["content-type"]);
 
   // Log the body
-  // console.log("Request body:", req.body);
+  console.log("Request body:", req.body);
 
   // If it's multipart/form-data, we need to use a different approach
   if (
@@ -111,9 +111,10 @@ app.use("/api/transactions", async (req, res) => {
       case "DELETE":
         return res.status(405).json({ message: "Method Not Allowed" });
       case "PATCH":
-        response = axios.patch(targetUrl, {
+        let response = axios.patch(targetUrl, {
           headers: {
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
           params: req.params,
           ...req.body,
@@ -234,7 +235,7 @@ app.use("/api/users", async (req, res) => {
     // Verificar el método HTTP
     switch (req.header("method")) {
       case "POST":
-        const response = await axios.post(targetUrl, {
+        let response = await axios.post(targetUrl, {
           ...req.params,
           ...req.body,
         });
@@ -249,7 +250,7 @@ app.use("/api/users", async (req, res) => {
         return res.status(405).json({ message: "Method Not Allowed" });
     }
 
-    const response = await axios.get(
+    let response = await axios.get(
       targetUrl,
       {
         params: req.params,

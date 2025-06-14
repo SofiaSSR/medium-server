@@ -24,11 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/transactions", async (req, res) => {
   // Log the raw request headers to see what's coming in
-  // console.log("Request headers:", req.headers);
+  console.log("Request headers:", req.headers);
   console.log("Content-Type:", req.headers["content-type"]);
 
   // Log the body
-  // console.log("Request body:", req.body);
+  console.log("Request body:", req.body);
 
   // If it's multipart/form-data, we need to use a different approach
   if (
@@ -64,13 +64,11 @@ app.use("/api/transactions", async (req, res) => {
         };
 
         console.log("Sending request to webhook");
-        let response = await axios.request(config);
-        // console.log("Webhook response:");
-        // console.log("Webhook response:", response.data);
-        console.log("Webhook response status:", response.status, response.data);
+        const response = await axios.request(config);
+        console.log("Webhook response:", response.data);
         res.status(response.status).send(response.data);
       } catch (error) {
-        console.error("Error forwarding to webhook:");
+        console.error("Error forwarding to webhook:", error);
         res.status(500).json({
           message: "Failed to forward request to webhook",
           error: error.message,
@@ -78,7 +76,7 @@ app.use("/api/transactions", async (req, res) => {
       }
     });
 
-    return; // Important: return here to prevent further processing¬
+    return; // Important: return here to prevent further processing
   }
 
   // res.status(200).json({ message: "Data received" });
@@ -96,10 +94,11 @@ app.use("/api/transactions", async (req, res) => {
     console.log("Request method:", res.header("method"));
     switch (req.header("method")) {
       case "POST":
-        let response = axios.post(targetUrl, {
+        const response = axios.post(targetUrl, {
           headers: {
             // "Content-Type": "application/json",
             "Content-Type": "multipart/form-data",
+
           },
           params: req.params,
           ...req.body,
@@ -111,15 +110,7 @@ app.use("/api/transactions", async (req, res) => {
       case "DELETE":
         return res.status(405).json({ message: "Method Not Allowed" });
       case "PATCH":
-        response = axios.patch(targetUrl, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          params: req.params,
-          ...req.body,
-        });
-        res.status(response.status).send(response.data);
-        return response.data
+        return res.status(405).json({ message: "Method Not Allowed" });
     }
     if (
       targetPath.includes("date-range") ||
@@ -133,15 +124,15 @@ app.use("/api/transactions", async (req, res) => {
         });
       }
       let { end_date, start_date } = getDateRange(period);
-      // console.log(
-      //   "Handling date range or filter mixed request",
-      //   {
-      //     end_date,
-      //     start_date,
-      //     ...req.body?.query,
-      //   },
-      //   req.body.data
-      // );
+      console.log(
+        "Handling date range or filter mixed request",
+        {
+          end_date,
+          start_date,
+          ...req.body?.query,
+        },
+        req.body.data
+      );
       const response = await axios.get(targetUrl, {
         headers: {
           "Content-Type": "application/json",
@@ -155,7 +146,7 @@ app.use("/api/transactions", async (req, res) => {
       });
       res.status(response.status).send(response.data);
       return;
-    }
+  }
 
     const response = await axios.get(targetUrl, {
       headers: {
@@ -199,27 +190,27 @@ function getDateRange(period) {
   };
 }
 
-// app.post("/api/saveTransactions", async (req, res) => {
-//   try {
-//     console.log(req.body);
-//     const response = axios.post(
-//       "http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/transactions/",
-//       {
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         params: req.params,
-//         ...req.body,
-//       }
-//     );
-//     res.status(response.status).send(response.data);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(error.status).json({
-//       message: "Manu deja el amor a gemini",
-//     });
-//   }
-// });
+app.post("/api/saveTransactions", async (req, res) => {
+  try {
+    console.log(req.body);
+    const response = axios.post(
+      "http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/transactions/",
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        params: req.params,
+        ...req.body,
+      }
+    );
+    res.status(response.status).send(response.data);
+  } catch (error) {
+    console.log(error);
+    res.status(error.status).json({
+      message: "Manu deja el amor a gemini",
+    });
+  }
+});
 
 app.use("/api/users", async (req, res) => {
   try {

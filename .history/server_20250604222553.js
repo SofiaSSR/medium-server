@@ -28,7 +28,7 @@ app.use("/api/transactions", async (req, res) => {
   console.log("Content-Type:", req.headers["content-type"]);
 
   // Log the body
-  // console.log("Request body:", req.body);
+  console.log("Request body:", req.body);
 
   // If it's multipart/form-data, we need to use a different approach
   if (
@@ -113,7 +113,8 @@ app.use("/api/transactions", async (req, res) => {
       case "PATCH":
         response = axios.patch(targetUrl, {
           headers: {
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
           params: req.params,
           ...req.body,

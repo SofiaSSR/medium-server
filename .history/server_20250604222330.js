@@ -28,7 +28,7 @@ app.use("/api/transactions", async (req, res) => {
   console.log("Content-Type:", req.headers["content-type"]);
 
   // Log the body
-  // console.log("Request body:", req.body);
+  console.log("Request body:", req.body);
 
   // If it's multipart/form-data, we need to use a different approach
   if (
@@ -64,7 +64,7 @@ app.use("/api/transactions", async (req, res) => {
         };
 
         console.log("Sending request to webhook");
-        let response = await axios.request(config);
+        const response = await axios.request(config);
         // console.log("Webhook response:");
         // console.log("Webhook response:", response.data);
         console.log("Webhook response status:", response.status, response.data);
@@ -111,9 +111,10 @@ app.use("/api/transactions", async (req, res) => {
       case "DELETE":
         return res.status(405).json({ message: "Method Not Allowed" });
       case "PATCH":
-        response = axios.patch(targetUrl, {
+        let response = axios.patch(targetUrl, {
           headers: {
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
+            "Content-Type": "multipart/form-data",
           },
           params: req.params,
           ...req.body,

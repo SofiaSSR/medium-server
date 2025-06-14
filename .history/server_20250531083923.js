@@ -24,11 +24,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/transactions", async (req, res) => {
   // Log the raw request headers to see what's coming in
-  // console.log("Request headers:", req.headers);
+  console.log("Request headers:", req.headers);
   console.log("Content-Type:", req.headers["content-type"]);
 
   // Log the body
-  // console.log("Request body:", req.body);
+  console.log("Request body:", req.body);
 
   // If it's multipart/form-data, we need to use a different approach
   if (
@@ -44,10 +44,10 @@ app.use("/api/transactions", async (req, res) => {
     req.on("end", async () => {
       try {
         const buffer = Buffer.concat(rawData);
+        console.log("Raw form data received", data, buffer);
 
         // Create FormData with the binary data
         let data = new FormData();
-        console.log("Raw form data received");
 
         // Extract the boundary from the content-type header
         const boundary = req.headers["content-type"].split("boundary=")[1];
@@ -64,13 +64,11 @@ app.use("/api/transactions", async (req, res) => {
         };
 
         console.log("Sending request to webhook");
-        let response = await axios.request(config);
-        // console.log("Webhook response:");
-        // console.log("Webhook response:", response.data);
-        console.log("Webhook response status:", response.status, response.data);
+        const response = await axios.request(config);
+        console.log("Webhook response:", response.data);
         res.status(response.status).send(response.data);
       } catch (error) {
-        console.error("Error forwarding to webhook:");
+        console.error("Error forwarding to webhook:", error);
         res.status(500).json({
           message: "Failed to forward request to webhook",
           error: error.message,
@@ -78,104 +76,98 @@ app.use("/api/transactions", async (req, res) => {
       }
     });
 
-    return; // Important: return here to prevent further processing¬
+    return; // Important: return here to prevent further processing
   }
 
   // res.status(200).json({ message: "Data received" });
   // return;
-  try {
-    const targetPath = req.header("X-Target-Path");
 
-    if (!targetPath || typeof targetPath !== "string") {
-      return res.status(400).json({ message: "Missing Target Path " });
-    }
-    const targetUrl = `${baseUrl}${targetPath}`;
+//   // try {
+//   //   const targetPath = req.header("X-Target-Path");
 
-    console.log("Proxying transactions request to:", targetUrl);
+//   //   if (!targetPath || typeof targetPath !== "string") {
+//   //     return res.status(400).json({ message: "Missing Target Path " });
+//   //   }
+//   //   const targetUrl = `${baseUrl}${targetPath}`;
 
-    console.log("Request method:", res.header("method"));
-    switch (req.header("method")) {
-      case "POST":
-        let response = axios.post(targetUrl, {
-          headers: {
-            // "Content-Type": "application/json",
-            "Content-Type": "multipart/form-data",
-          },
-          params: req.params,
-          ...req.body,
-        });
-        res.status(response.status).send(response.data);
-        return;
-      case "PUT":
-        return res.status(405).json({ message: "Method Not Allowed" });
-      case "DELETE":
-        return res.status(405).json({ message: "Method Not Allowed" });
-      case "PATCH":
-        response = axios.patch(targetUrl, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          params: req.params,
-          ...req.body,
-        });
-        res.status(response.status).send(response.data);
-        return response.data
-    }
-    if (
-      targetPath.includes("date-range") ||
-      targetPath.includes("filter-mixed")
-    ) {
-      const period = req.body?.data?.period;
+//   //   console.log("Proxying transactions request to:", targetUrl);
 
-      if (!period) {
-        return res.status(400).json({
-          message: "Missing period query parameter",
-        });
-      }
-      let { end_date, start_date } = getDateRange(period);
-      // console.log(
-      //   "Handling date range or filter mixed request",
-      //   {
-      //     end_date,
-      //     start_date,
-      //     ...req.body?.query,
-      //   },
-      //   req.body.data
-      // );
-      const response = await axios.get(targetUrl, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        params: {
-          ...req.params,
-          start_date,
-          end_date,
-          ...req.body?.query,
-        },
-      });
-      res.status(response.status).send(response.data);
-      return;
-    }
+//   //   console.log("Request method:", res);
+//   //   switch (req.header("method")) {
+//   //     case "POST":
+//   //       const response = axios.post(targetUrl, {
+//   //         headers: {
+//   //           // "Content-Type": "application/json",
+//   //           "Content-Type": "multipart/form-data",
 
-    const response = await axios.get(targetUrl, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      params: req.params,
-    });
-    res.status(response.status).send(response.data);
-  } catch (error) {
-    // console.error("Proxy error:", error.message);
-    // res.status(error.status).json({
-    //   message: "Proxy GET failed",
-    //   error: error.message,
-    //   error: error.response ? error.response.data : "No response data",
-    // });
-    res.status(error.status).json({
-      message: "Manu deja el amor a gemini",
-    });
-  }
-});
+//   //         },
+//   //         params: req.params,
+//   //         ...req.body,
+//   //       });
+//   //       res.status(response.status).send(response.data);
+//   //       return;
+//   //     case "PUT":
+//   //       return res.status(405).json({ message: "Method Not Allowed" });
+//   //     case "DELETE":
+//   //       return res.status(405).json({ message: "Method Not Allowed" });
+//   //     case "PATCH":
+//   //       return res.status(405).json({ message: "Method Not Allowed" });
+//   //   }
+//   //   if (
+//   //     targetPath.includes("date-range") ||
+//   //     targetPath.includes("filter-mixed")
+//   //   ) {
+//   //     const period = req.body?.data?.period;
+
+//   //     if (!period) {
+//   //       return res.status(400).json({
+//   //         message: "Missing period query parameter",
+//   //       });
+//   //     }
+//   //     let { end_date, start_date } = getDateRange(period);
+//   //     console.log(
+//   //       "Handling date range or filter mixed request",
+//   //       {
+//   //         end_date,
+//   //         start_date,
+//   //         ...req.body?.query,
+//   //       },
+//   //       req.body.data
+//   //     );
+//   //     const response = await axios.get(targetUrl, {
+//   //       headers: {
+//   //         "Content-Type": "application/json",
+//   //       },
+//   //       params: {
+//   //         ...req.params,
+//   //         start_date,
+//   //         end_date,
+//   //         ...req.body?.query,
+//   //       },
+//   //     });
+//   //     res.status(response.status).send(response.data);
+//   //     return;
+//   //   }
+
+//   //   const response = await axios.get(targetUrl, {
+//   //     headers: {
+//   //       "Content-Type": "application/json",
+//   //     },
+//   //     params: req.params,
+//   //   });
+//   //   res.status(response.status).send(response.data);
+//   // } catch (error) {
+//   //   // console.error("Proxy error:", error.message);
+//   //   // res.status(error.status).json({
+//   //   //   message: "Proxy GET failed",
+//   //   //   error: error.message,
+//   //   //   error: error.response ? error.response.data : "No response data",
+//   //   // });
+//   //   res.status(error.status).json({
+//   //     message: "Manu deja el amor a gemini",
+//   //   });
+//   // }
+// });
 
 function getDateRange(period) {
   const end_date = new Date();
@@ -199,27 +191,27 @@ function getDateRange(period) {
   };
 }
 
-// app.post("/api/saveTransactions", async (req, res) => {
-//   try {
-//     console.log(req.body);
-//     const response = axios.post(
-//       "http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/transactions/",
-//       {
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         params: req.params,
-//         ...req.body,
-//       }
-//     );
-//     res.status(response.status).send(response.data);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(error.status).json({
-//       message: "Manu deja el amor a gemini",
-//     });
-//   }
-// });
+app.post("/api/saveTransactions", async (req, res) => {
+  try {
+    console.log(req.body);
+    const response = axios.post(
+      "http://ec2-35-90-236-177.us-west-2.compute.amazonaws.com:3000/transactions/",
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        params: req.params,
+        ...req.body,
+      }
+    );
+    res.status(response.status).send(response.data);
+  } catch (error) {
+    console.log(error);
+    res.status(error.status).json({
+      message: "Manu deja el amor a gemini",
+    });
+  }
+});
 
 app.use("/api/users", async (req, res) => {
   try {

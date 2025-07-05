@@ -70,7 +70,7 @@ app.use("/api/transactions", async (req, res) => {
         // console.log("Webhook response status:", response.status, response.data);
         res.status(response.status).send(response.data);
       } catch (error) {
-        console.error("Error forwarding to webhook:");
+        console.error("Error forwarding to webhook:", error );
         res.status(500).json({
           message: "Failed to forward request to webhook",
           error: error.message,
@@ -164,12 +164,12 @@ app.use("/api/transactions", async (req, res) => {
       });
       res.status(response.status).send(response.data);
     } catch (error) {
-      // console.error("Proxy error:", error.message);
-      // res.status(error.status).json({
-      //   message: "Proxy GET failed",
-      //   error: error.message,
-      //   error: error.response ? error.response.data : "No response data",
-      // });
+      console.error("Proxy error:", error.message);
+      res.status(error.status).json({
+        message: "Proxy GET failed",
+        error: error.message,
+        error: error.response ? error.response.data : "No response data",
+      });
       res.status(error.status).json({
         message: "Manu deja el amor a gemini",
       });
